@@ -16,7 +16,7 @@ function Application(id, name) {
     this.yesMeterP = 0;
     this.noMeterP = 0;
     this.approval = 0;
-    this.priorityRating = 0;
+    this.priorityRating = 1;
     //this.isSticky = false;
     this.evalGroup = "";
     this.appStatus = "open";
@@ -84,29 +84,42 @@ function Application(id, name) {
             return this.approval;
         },
         this.calcPriority = function () {
+            //defaults
             var bump = 1;
             var votesNeeded = 1;
             var ambiguity = 1;
+
+            // First and foremost, the higher the "priortyRate" number is, the lower
+            // its priority. Heavier numbers sink to the bottom.
+
+            // how close is the approval rate? All negative numbers are flattened to real numbers
             var closeness = Math.abs(58 - this.approval);
+            // If the application hasn't met quorum, then multiply the amount it needs
+            // to hit quorum (+1, because anything multiplied by 0 is 0)
             if (this.appQuorum.hasMetQuorum === false) {
-                votesNeeded = (parseFloat((1 + this.appQuorum.withinQuorum) * .033));
+                votesNeeded = (parseFloat((this.appQuorum.withinQuorum + .5) * .033)).toFixed(3);
             }
-            if (this.totalVotes > 15 && closeness > 22) {
+            // If the approval rate is more than 22 points away from
+            // 58, the ambiguity factor will decrease by 20%.
+            if (this.totalVotes > 14 && closeness > 22) {
                 ambiguity = parseFloat(1.2);
             }
-            else if (this.totalVotes > 15 && closeness < 10) {
+            // If the approval rate is within 10 points of 58, then...
+            else if (this.totalVotes > 1 && closeness < 9) {
+                // We can't use 0, so add 1 to "closeness"
                 var ambiguity = (closeness + 1);
+                // If approval rating is LOWER than 55, reduce ambiguity to .12
                 if (this.approval < 55) {
-                    ambiguity = parseFloat(ambiguity * .13);
+                    ambiguity = parseFloat(parseFloat(ambiguity) * .12);
                 }
                 else {
-                    ambiguity = (parseFloat(ambiguity * .1));
+                    // If approval rating is HIGHER than 55, reduce ambiguity further to .1
+                    ambiguity = parseFloat(parseFloat(ambiguity) * .1);
                 }
             }
-            if (votesNeeded < 1 || ambiguity < 1) {
-                bump = parseFloat(ambiguity * votesNeeded);
-            }
-            this.priorityRating = Math.round((parseFloat(this.totalVotes * bump) * 10).toFixed(0) / 3);
+                bump = parseFloat((parseFloat(votesNeeded) * parseFloat(ambiguity)));
+            // multiply the total votes by that bump, and then make the number easier to look at.
+            this.priorityRating = ((parseFloat(this.totalVotes * bump) * 10) / 3).toFixed(2);
             return this.priorityRating;
         }
     this.updateStats = function () {
