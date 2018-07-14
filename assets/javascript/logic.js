@@ -19,7 +19,7 @@ function Application(id, name) {
     this.priorityRating = 0;
     //this.isSticky = false;
     this.evalGroup = "";
-    this.appStatus = "";
+    this.appStatus = "open";
     this.userVoted = false;
     this.appQuorum = {
         hasMetQuorum: false,
@@ -89,23 +89,28 @@ function Application(id, name) {
             var ambiguity = 1;
             var closeness = Math.abs(58 - this.approval);
             if (this.appQuorum.hasMetQuorum === false) {
-                votesNeeded = parseFloat(this.appQuorum.withinQuorum * .033);
+                votesNeeded = (parseFloat((1 + this.appQuorum.withinQuorum) * .033));
             }
-            if (this.totalVotes > 9 && closeness < 10) {
-                var ambiguity = (10 - closeness);
-                if (this.approval < 50) {
-                    ambiguity = parseFloat(ambiguity * 2);
-                } // FIX THIS
-                ambiguity = (1 - parseFloat(ambiguity * .01));
+            if (this.totalVotes > 15 && closeness > 24) {
+                ambiguity = parseFloat(1.2);
+            }
+            else if (this.totalVotes > 15 && closeness < 10) {
+                var ambiguity = (closeness + 1);
+                if (this.approval < 55) {
+                    ambiguity = parseFloat(ambiguity * .13);
+                }
+                else {
+                    ambiguity = (parseFloat(ambiguity * .1));
+                }
             }
             if (votesNeeded < 1 || ambiguity < 1) {
-                bump = parseFloat(votesNeeded * ambiguity).toFixed(3);
-                console.log(this.name + bump)
+                bump = parseFloat(ambiguity * votesNeeded);
             }
-            this.priorityRating = parseFloat(this.totalVotes * bump).toFixed(3);
+            this.priorityRating = Math.round((parseFloat(this.totalVotes * bump) * 10).toFixed(0) / 3);
             return this.priorityRating;
         }
     this.updateStats = function () {
+        console.log("*******************")
         this.calcTotalVotes();
         this.calcQuorumVals();
         this.calcMeter();
@@ -113,15 +118,20 @@ function Application(id, name) {
         this.noVoteMeter();
         this.calcApproval();
         this.calcPriority();
-        // console.log(this.name + " priority: " + this.priorityRating)
     },
         this.updateHTML = function () {
+            this.updateStats();
+            console.log(this.name + ":" +
+                "\nStatus is: " + this.appStatus,
+                "\nPriority is: " + this.priorityRating, )
             $(`#${this.id}`).addClass(this.appStatus);
             $(`#quorum-${this.id}`).text(this.totalVotes + "/" + quorum + " votes");
             $(`#approval-${this.id}`).text(this.approval + "%");
             $(`#yMeter-${this.id}`).animate({ width: this.yesMeterP + "%" }, { duration: 0 });
             $(`#nMeter-${this.id}`).animate({ width: this.noMeterP + "%" }, { duration: 0 });
-            if (this.appStatus && this.appStatus != "sticky") {
+            if (this.appStatus == "triaged" ||
+                this.appStatus == "declined" ||
+                this.appStatus == "accepted") {
                 $(`#yes`).addClass("hide");
                 $(`#no`).addClass("hide");
             }
@@ -141,20 +151,16 @@ var applications = [spooky_comic, sciFi_Soap_Opera, world_hoppers, martial_art_e
 $(document).ready(function () {
 
     function sortApps() {
+        console.log("*******************")
         var appClass = [".sticky-cat", ".need-votes-cat", ".met-quorum-cat", ".has-voted-cat", ".triaged-cat", ".accepted-cat", ".declined-cat"];
         for (var i = 0; i < appClass.length; i++) {
             $(appClass[i]).empty();
         }
 
         function compare(a, b) {
-            if (a.priorityRating < b.priorityRating)
-                return -1;
-            if (a.priorityRating > b.priorityRating)
-                return 1;
-            return 0;
+            return a.priorityRating - b.priorityRating
         }
-
-        applications.sort(compare);
+        applications = applications.sort(compare);
 
         for (var i = 0; i < applications.length; i++) {
             // is app sticky?
@@ -176,7 +182,6 @@ $(document).ready(function () {
             } else {
                 $(".need-votes-cat").append(applications[i].appHTML)
             }
-            applications[i].updateStats();
             applications[i].updateHTML();
         }
     }
@@ -188,7 +193,6 @@ $(document).ready(function () {
         var thisAppID = $(this).attr("data-name");
         var thisApp = eval(thisAppID);
         thisApp.yesVotes++;
-        thisApp.updateStats();
         thisApp.updateHTML();
         sortApps();
     })
@@ -197,7 +201,6 @@ $(document).ready(function () {
         var thisAppID = $(this).attr("data-name");
         var thisApp = eval(thisAppID);
         thisApp.noVotes++;
-        thisApp.updateStats();
         thisApp.updateHTML();
         sortApps();
     })
@@ -205,32 +208,30 @@ $(document).ready(function () {
     $(document.body).on("click", "#sticky", function () {
         var thisAppID = $(this).attr("data-name");
         var thisApp = eval(thisAppID);
-        console.log("You clicked 'sticky'")
         if (thisApp.appStatus != "sticky") {
             thisApp.appStatus = "sticky";
         }
-        else { thisApp.appStatus = "" }
+        else { thisApp.appStatus = "open" }
+        thisApp.updateHTML();
         sortApps();
     })
 
     $(document.body).on("click", "#triage", function () {
         var thisAppID = $(this).attr("data-name");
         var thisApp = eval(thisAppID);
-        console.log("You clicked 'triage'")
         if (thisApp.appStatus != "triaged") {
-            if (thisApp.yesVotes) {
-                var conf = confirm("This application has at least one vote in favor. Are you sure you want to triage?");
-                if (conf === true) {
-                    thisApp.appStatus = "triaged";
-                }
-            }else {
+            if (!thisApp.yesVotes) {
                 thisApp.appStatus = "triaged";
+            } else {
+                var conf = confirm("This application has at least one vote in favor. Are you sure you want to triage?");
+                if (conf === true) { thisApp.appStatus = "triaged"; }
             }
         }
         else {
-        thisApp.appStatus = ""
-            prompt("The triage has been overturned.")
+            thisApp.appStatus = "open";
+            alert("The triage has been overturned.")
         }
+        thisApp.updateHTML();
         sortApps();
     })
 
