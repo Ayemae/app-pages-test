@@ -30,7 +30,7 @@ h1 {
 
 }
 
-#app-thread {
+.app-thread {
     padding: 12px;
     background-color: lavender;
     margin: 8px 0;

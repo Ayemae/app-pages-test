@@ -1,15 +1,15 @@
 
 
 
-var applications = ["Lapse", "Sunset Grill"]
+var applications = ["spooky_comic", "sciFi_Soap_Opera"]
 var appHTML = $("<div id='app-thread' data-name=''><div class='app-top-row'><div id='vote-status'></div><div id='app-name'></div>" +
     "<div id='vote-meter'><span id='qu-meet'>0/30</span><div id='yes-meter'></div><div id='no-meter'></div></div>" +
     "<div class='approval'>Approval: <span id='approval'>0%</span></div></div>" +
     "<div style='display: inline-block;'><button id='yes'>Yes</button><button id='no'>No</button></div>" +
     "<div id='tags'></div></div>");
 
-// var yesVotes;
-// var noVotes;
+var yesVotes;
+var noVotes;
 var quorum = 30;
 var approval;
 var vetos;
@@ -30,7 +30,6 @@ function calcQuorum() {
     } else {
         meterSpace = totalVotes;
     }
-    console.log("thisQuorum: " + thisQuorum)
     console.log("MeterSpace: " + meterSpace)
     return meterSpace;
 }
@@ -56,8 +55,8 @@ function noVoteMeter(nv, cq) {
 
 
 $(document).ready(function () {
-        var yesVotes = 0;
-        var noVotes = 0;
+         yesVotes = 0;
+         noVotes = 0;
 
 
         $(document.body).on("click", "#yes", function () {
