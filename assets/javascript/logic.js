@@ -223,6 +223,8 @@ $(document).ready(function () {
                 if (conf === true) {
                     thisApp.appStatus = "triaged";
                 }
+            }else {
+                thisApp.appStatus = "triaged";
             }
         }
         else {
