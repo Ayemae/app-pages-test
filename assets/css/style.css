@@ -34,6 +34,7 @@ h1 {
     padding: 12px;
     background-color: lavender;
     margin: 8px 0;
+    border-radius: 5px;
 }
 
 .app-top-row {
@@ -114,4 +115,16 @@ height: 20px;
 }
 .tag-format {
     background-color: #3f93ed;
+}
+
+.sticky {
+    border: 4px #ae1212 solid;
+}
+
+.triaged {
+    background-color: lightgrey;
+}
+
+.hide {
+    display: none;
 }
