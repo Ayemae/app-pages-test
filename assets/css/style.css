@@ -49,7 +49,7 @@ width: auto;
 height: 20px;
 }
 
-#vote-meter {
+.vote-meter {
     height: 20px;
     width: 100%;
     background-color: #a4a4a4;
@@ -59,13 +59,13 @@ height: 20px;
     border-radius: 4px;
 }
 
-#qu-meet {
+.quorum {
     position: absolute;
     z-index: 5;
     left: 8px;
 }
 
-#yes-meter {
+.yes-meter {
     background-color: #7be67b;
     height: 100%;
     width: 0%;
@@ -77,7 +77,7 @@ height: 20px;
     z-index: 4;
 }
 
-#no-meter {
+.no-meter {
     background-color: #f79cad;
     height: 100%;
     width: 0%;

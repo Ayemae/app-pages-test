@@ -6,40 +6,62 @@ function Application(id, name) {
     this.tags = [];
     this.yesVotes = 0;
     this.noVotes = 0;
-    this.calcTotalVotes = function () {
-        totalVotes = this.yesVotes + this.noVotes;
-        return totalVotes;
-    }
     this.totalVotes = 0;
+    this.calcTotalVotes = function () {
+        this.totalVotes = this.yesVotes + this.noVotes;
+        return this.totalVotes;
+    }
     this.meterSize = 0;
     this.quorumLeft = 0;
     this.yesMeterP = 0;
     this.noMeterP = 0;
     this.approval = 0;
+    this.appHTML = 
+    `<div id="${this.id}" class="app-thread" data-name="${this.id}">
+    <div class="app-top-row">
+        <div class="vote-status"></div>
+        <div class="app-name">${this.name}</div>
+        <div class="vote-meter">
+            <span id="quorum-${this.id}" class="quorum">${this.totalVotes}/${quorum} votes</span>
+            <div id="yMeter-${this.id}" class="yes-meter"></div>
+            <div id="nMeter-${this.id}" class="no-meter"></div>
+        </div>
+        <div class="approval">Approval:
+            <span id="approval-${this.id}">\n${this.approval}%</span>
+        </div>
+    </div>
+    <div style="display: inline-block;">
+            <button id="yes" data-name="${this.id}">Yes</button>
+            <button id="no" data-name="${this.id}">No</button>
+        </div>
+    <div id="tags">
+        Tags: 
+    </div>
+</div>`;
     this.calcMeter = function () {
         var quRemainder = quorum - this.totalVotes;
         if (quRemainder > -1) {
             this.quorumLeft = quorum - quRemainder;
             this.meterSize = this.totalVotes + quRemainder;
         } else {
-            meterSize = this.totalVotes;
+            this.meterSize = this.totalVotes;
         }
         return this.meterSize;
     },
         this.yesVoteMeter = function () {
             var a = this.yesVotes / this.meterSize;
-            yesMeter = Math.round(a * 100);
-            return yesMeter;
+            this.yesMeterP = Math.round(a * 100);
+            return this.yesMeterP;
         },
         this.noVoteMeter = function () {
             var a = this.noVotes / this.meterSize;
-            this.noMeter = Math.round(a * 100);
-            return this.noMeter;
+            this.noMeterP = Math.round(a * 100);
+            return this.noMeterP;
         },
         this.calcApproval = function () {
             var a = this.yesVotes / this.totalVotes;
-            approval = Math.round(a * 100);
-            return approval;
+            this.approval = Math.round(a * 100);
+            return this.approval;
         },
         this.updateStats = function () {
             this.calcTotalVotes();
@@ -47,7 +69,13 @@ function Application(id, name) {
             this.yesVoteMeter();
             this.noVoteMeter();
             this.calcApproval();
-            console.log("totalVotes: " + totalVotes)
+            console.log("totalVotes: " + this.totalVotes)
+        }
+        this.updateHTML = function() {
+            $(`#quorum-${this.id}`).text(this.totalVotes + "/" + quorum + " votes")
+            $(`#approval-${this.id}`).text(this.approval + "%")
+            $(`#yMeter-${this.id}`).animate({ width: this.yesMeterP + "%" }, { duration: 10 })
+            $(`#nMeter-${this.id}`).animate({ width: this.noMeterP + "%" }, { duration: 10 })
         }
 }
 
@@ -62,32 +90,8 @@ var applications = [spooky_comic, sciFi_Soap_Opera]
 $(document).ready(function () {
 
     for (var i = 0; i < applications.length; i++) {
-
         console.log(applications[i])
-        var appHTML = $(
-            `<div id="${applications[i].id}" class="app-thread" data-name="${applications[i].id}">
-            <div class="app-top-row">
-                <div id="vote-status"></div>
-                <div id="app-name">${applications[i].name}</div>
-                <div id="vote-meter">
-                    <span id="qu-meet">${applications[i].totalVotes}/${quorum}</span>
-                    <div id="yes-meter"></div>
-                    <div id="no-meter"></div>
-                </div>
-                <div class="approval">Approval:
-                    <span id="approval">${applications[i].approval}</span>
-                </div>
-            </div>
-            <div style="display: inline-block;">
-                    <button id="yes" data-name="${applications[i].id}">Yes</button>
-                    <button id="no" data-name="${applications[i].id}">No</button>
-                </div>
-            <div id="tags">
-                Tags: 
-            </div>
-        </div>`
-        );
-        $(".app-index").append(appHTML)
+        $(".app-index").append(applications[i].appHTML)
     }
 
 
@@ -96,9 +100,8 @@ $(document).ready(function () {
         var thisApp = eval(thisAppID);
         thisApp.yesVotes++;
         console.log("You voted yes.")
-        console.log(thisApp.name)
         thisApp.updateStats();
-        updateHTML(thisApp.id, thisApp.totalVotes, thisApp.yesMeterP, thisApp.noMeterP);
+        thisApp.updateHTML();
     })
 
     $(document.body).on("click", `#no`, function () {
@@ -107,19 +110,9 @@ $(document).ready(function () {
         thisApp.noVotes++;
         console.log("You voted no.")
         thisApp.updateStats();
-        updateHTML(thisApp.id, thisApp.totalVotes, thisApp.yesMeterP, thisApp.noMeterP);
+        thisApp.updateHTML();
     })
 
-    function updateHTML(appID, appTVotes, appAprvl, appYMP, appNMP) {
-        console.log(appTVotes)
-        var thisApp = $(`#${appID}`);
-        thisApp.html(
-            $("#qu-meet").text(appTVotes + "/" + quorum + " votes"),
-            $("#approval").text(appAprvl + "%"),
-            $("#yes-meter").animate({ width: appYMP + "%" }, { duration: 10 }),
-            $("#no-meter").animate({ width: appNMP + "%" }, { duration: 10 })
-        )
-    }
 
 
 }); //end doc ready
