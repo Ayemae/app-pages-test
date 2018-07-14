@@ -91,7 +91,7 @@ function Application(id, name) {
             if (this.appQuorum.hasMetQuorum === false) {
                 votesNeeded = (parseFloat((1 + this.appQuorum.withinQuorum) * .033));
             }
-            if (this.totalVotes > 15 && closeness > 24) {
+            if (this.totalVotes > 15 && closeness > 22) {
                 ambiguity = parseFloat(1.2);
             }
             else if (this.totalVotes > 15 && closeness < 10) {
