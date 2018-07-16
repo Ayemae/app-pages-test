@@ -49,8 +49,8 @@ function Application(id, name) {
         </div>
     </div>
     <div style="display: inline-block;">
-            <button id="yes" data-name="${this.id}">Yes</button>
-            <button id="no" data-name="${this.id}">No</button>
+            <button id="${this.id}-yes" class="yes" data-name="${this.id}">Yes</button>
+            <button id="${this.id}-no" class="no" data-name="${this.id}">No</button>
             <button id="sticky" data-name="${this.id}">Sticky</button>
             <button id="triage" data-name="${this.id}">Triage</button>
         </div>
@@ -110,14 +110,14 @@ function Application(id, name) {
                 var ambiguity = (closeness + 1);
                 // If approval rating is LOWER than 55, reduce ambiguity to .12
                 if (this.approval < 55) {
-                    ambiguity = parseFloat(parseFloat(ambiguity) * .12);
+                    ambiguity = parseFloat(ambiguity * .12);
                 }
                 else {
                     // If approval rating is HIGHER than 55, reduce ambiguity further to .1
-                    ambiguity = parseFloat(parseFloat(ambiguity) * .1);
+                    ambiguity = parseFloat(ambiguity * .1);
                 }
             }
-                bump = parseFloat((parseFloat(votesNeeded) * parseFloat(ambiguity)));
+                bump = parseFloat(votesNeeded * ambiguity);
             // multiply the total votes by that bump, and then make the number easier to look at.
             this.priorityRating = ((parseFloat(this.totalVotes * bump) * 10) / 3).toFixed(2);
             return this.priorityRating;
@@ -145,8 +145,12 @@ function Application(id, name) {
             if (this.appStatus == "triaged" ||
                 this.appStatus == "declined" ||
                 this.appStatus == "accepted") {
-                $(`#yes`).addClass("hide");
-                $(`#no`).addClass("hide");
+                    console.log(this.name + "'s buttons were hidden.")
+                $(`#${this.id}-yes`).addClass("hide");
+                $(`#${this.id}-no`).addClass("hide");
+            }else if (this.appStatus == "open" || this.appStatus == "sticky") {
+                $(`#${this.id}-yes`).removeClass("hide");
+                $(`#${this.id}-no`).removeClass("hide");
             }
         }
 }
@@ -202,7 +206,7 @@ $(document).ready(function () {
     sortApps();
 
 
-    $(document.body).on("click", "#yes", function () {
+    $(document.body).on("click", ".yes", function () {
         var thisAppID = $(this).attr("data-name");
         var thisApp = eval(thisAppID);
         thisApp.yesVotes++;
@@ -210,7 +214,7 @@ $(document).ready(function () {
         sortApps();
     })
 
-    $(document.body).on("click", "#no", function () {
+    $(document.body).on("click", ".no", function () {
         var thisAppID = $(this).attr("data-name");
         var thisApp = eval(thisAppID);
         thisApp.noVotes++;
