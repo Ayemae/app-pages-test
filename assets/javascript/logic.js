@@ -3,24 +3,62 @@ var quorum = 30;
 function Application(id, name) {
     this.id = id;
     this.name = name;
-    this.tags = [];
+    this.genres = [];
+    this.format = [];
+    this.contentWarnings = [];
+    this.tags = {
+        genreTags: this.genres,
+        formatTags: this.format,
+        contentTags: this.contentWarnings,
+        miscTags: []
+    }
     this.yesVotes = 0;
     this.noVotes = 0;
     this.totalVotes = 0;
     this.calcTotalVotes = function () {
         this.totalVotes = this.yesVotes + this.noVotes;
         return this.totalVotes;
-    }
-    this.meterSize = 0;
-    this.quorumLeft = 0;
-    this.yesMeterP = 0;
-    this.noMeterP = 0;
+    };
+    this.meter = {
+        meterSize: 0,
+        yesMeterP: 0,
+        noMeterP: 0
+    };
     this.approval = 0;
-    this.priorityRating = 1;
-    //this.isSticky = false;
+    this.priorityRating = 0;
     this.evalGroup = "";
     this.appStatus = "open";
-    this.userVoted = false;
+    this.appCondition = {
+        isSticky: false,
+        isOpen: true,
+        triageMotion: false,
+        triageApprove: 2,
+        isTriaged: false,
+        declined: false,
+        accepted: false,
+        needsLetter: false,
+    }
+    this.determineAppStatus = function() {
+        if (this.appCondition.isSticky === true) {
+            this.appStatus = "sticky";
+        }
+        else if (this.appCondition.accepted === true) {
+            this.appStatus = "accepted";
+        }
+        else if (this.appCondition.declined === true) {
+            this.appStatus = "declined";
+        }
+        else if (this.appCondition.isTriaged === true || this.appCondition.triageApprove <= 0) {
+            this.appStatus = "triaged";
+            this.appCondition.isTriaged === true;
+        }
+        else {
+            this.appStatus = "open";
+        }
+        return this.appStatus;
+    }
+    this.thisUserVoted = false;
+    this.usersVoted = [];
     this.appQuorum = {
         hasMetQuorum: false,
         toHitQuorum: quorum,
@@ -60,22 +98,16 @@ function Application(id, name) {
 </div>`;
     this.calcMeter = function () {
         if (this.appQuorum.hasMetQuorum === false) {
-            this.meterSize = this.totalVotes + this.appQuorum.toHitQuorum;
+            this.meter.meterSize = this.totalVotes + this.appQuorum.toHitQuorum;
         } else {
-            this.meterSize = this.totalVotes;
+            this.meter.meterSize = this.totalVotes;
         }
-        return this.meterSize;
+        var y = this.yesVotes / this.meter.meterSize;
+        this.meter.yesMeterP = Math.round(y * 100);
+        var n = this.noVotes / this.meter.meterSize;
+        this.meter.noMeterP = Math.round(n * 100);
+        return this.meter;
     },
-        this.yesVoteMeter = function () {
-            var a = this.yesVotes / this.meterSize;
-            this.yesMeterP = Math.round(a * 100);
-            return this.yesMeterP;
-        },
-        this.noVoteMeter = function () {
-            var a = this.noVotes / this.meterSize;
-            this.noMeterP = Math.round(a * 100);
-            return this.noMeterP;
-        },
         this.calcApproval = function () {
             if (this.totalVotes) {
                 var a = this.yesVotes / this.totalVotes;
@@ -117,19 +149,17 @@ function Application(id, name) {
                     ambiguity = parseFloat(ambiguity * .1);
                 }
             }
-                bump = parseFloat(votesNeeded * ambiguity);
+            bump = parseFloat(votesNeeded * ambiguity);
             // multiply the total votes by that bump, and then make the number easier to look at.
             this.priorityRating = ((parseFloat(this.totalVotes * bump) * 10) / 3).toFixed(2);
             return this.priorityRating;
         }
     this.updateStats = function () {
-        console.log("*******************")
         this.calcTotalVotes();
         this.calcQuorumVals();
         this.calcMeter();
-        this.yesVoteMeter();
-        this.noVoteMeter();
         this.calcApproval();
+        this.determineAppStatus();
         this.calcPriority();
     },
         this.updateHTML = function () {
@@ -140,15 +170,14 @@ function Application(id, name) {
             $(`#${this.id}`).addClass(this.appStatus);
             $(`#quorum-${this.id}`).text(this.totalVotes + "/" + quorum + " votes");
             $(`#approval-${this.id}`).text(this.approval + "%");
-            $(`#yMeter-${this.id}`).animate({ width: this.yesMeterP + "%" }, { duration: 0 });
-            $(`#nMeter-${this.id}`).animate({ width: this.noMeterP + "%" }, { duration: 0 });
+            $(`#yMeter-${this.id}`).animate({ width: this.meter.yesMeterP + "%" }, { duration: 0 });
+            $(`#nMeter-${this.id}`).animate({ width: this.meter.noMeterP + "%" }, { duration: 0 });
             if (this.appStatus == "triaged" ||
                 this.appStatus == "declined" ||
                 this.appStatus == "accepted") {
-                    console.log(this.name + "'s buttons were hidden.")
                 $(`#${this.id}-yes`).addClass("hide");
                 $(`#${this.id}-no`).addClass("hide");
-            }else if (this.appStatus == "open" || this.appStatus == "sticky") {
+            } else if (this.appStatus == "open" || this.appStatus == "sticky") {
                 $(`#${this.id}-yes`).removeClass("hide");
                 $(`#${this.id}-no`).removeClass("hide");
             }
@@ -162,7 +191,7 @@ var martial_art_endworld = new Application("martial_art_endworld", "Martial Art 
 
 var applications = [spooky_comic, sciFi_Soap_Opera, world_hoppers, martial_art_endworld]
 
-
+var totalApps = applications.length;
 
 
 $(document).ready(function () {
@@ -225,10 +254,10 @@ $(document).ready(function () {
     $(document.body).on("click", "#sticky", function () {
         var thisAppID = $(this).attr("data-name");
         var thisApp = eval(thisAppID);
-        if (thisApp.appStatus != "sticky") {
-            thisApp.appStatus = "sticky";
+        if (thisApp.appCondition.isSticky === false) {
+            thisApp.appCondition.isSticky = true;
         }
-        else { thisApp.appStatus = "open" }
+        else { thisApp.appCondition.isSticky = false }
         thisApp.updateHTML();
         sortApps();
     })
@@ -236,17 +265,18 @@ $(document).ready(function () {
     $(document.body).on("click", "#triage", function () {
         var thisAppID = $(this).attr("data-name");
         var thisApp = eval(thisAppID);
-        if (thisApp.appStatus != "triaged") {
+        if (thisApp.appCondition.isTriaged === false) {
             if (!thisApp.yesVotes) {
-                thisApp.appStatus = "triaged";
+                thisApp.appCondition.isTriaged = true;
             } else {
                 var conf = confirm("This application has at least one vote in favor. Are you sure you want to triage?");
-                if (conf === true) { thisApp.appStatus = "triaged"; }
+                if (conf === true) { thisApp.appCondition.triageMotion = true; }
             }
         }
         else {
-            thisApp.appStatus = "open";
+            thisApp.appCondition.triageMotion = false;
             alert("The triage has been overturned.")
+            thisApp.appCondition.triageApprove = 2;
         }
         thisApp.updateHTML();
         sortApps();
