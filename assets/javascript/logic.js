@@ -38,7 +38,7 @@ function Application(id, name) {
         accepted: false,
         needsLetter: false,
     }
-    this.determineAppStatus = function() {
+    this.determineAppStatus = function () {
         if (this.appCondition.isSticky === true) {
             this.appStatus = "sticky";
         }
@@ -217,11 +217,11 @@ $(document).ready(function () {
             // is app sticky?
             if (applications[i].appStatus === "sticky") {
                 $(".sticky-cat").append(applications[i].appHTML);
-            // } // is app closed?
-            // else if (applications[i].appStatus === "accepted") {
-            //     $(".accepted-cat").append(applications[i].appHTML);
-            // } else if (applications[i].appStatus === "declined") {
-            //     $(".declined-cat").append(applications[i].appHTML);
+                // } // is app closed?
+                // else if (applications[i].appStatus === "accepted") {
+                //     $(".accepted-cat").append(applications[i].appHTML);
+                // } else if (applications[i].appStatus === "declined") {
+                //     $(".declined-cat").append(applications[i].appHTML);
             } else if (applications[i].appStatus === "triaged") {
                 $(".triaged-cat").append(applications[i].appHTML);
             } // has user voted?
@@ -270,18 +270,19 @@ $(document).ready(function () {
     $(document.body).on("click", "#accept", function () {
         var thisAppID = $(this).attr("data-name");
         var thisApp = eval(thisAppID);
-            thisApp.appCondition.accepted = true;
-            acceptedApps.push(thisApp);
-            var indexNum = applications.indexOf(thisApp);
-            if (indexNum > -1) {
-                applications.splice(indexNum, 1);
-            }
-            var accHTML = `
+        thisApp.appCondition.accepted = true;
+        acceptedApps.push(thisApp);
+        var indexNum = applications.indexOf(thisApp);
+        if (indexNum > -1) {
+            applications.splice(indexNum, 1);
+        }
+        var accHTML = `
             <div class="accepted-thread">
             <h3>${thisApp.name}</h3>
                 <p>${thisApp.approval}% approval<p>
             </div>`
-            $(".accepted-cat").append(accHTML)
+        $(".accepted-cat").append(accHTML)
+        $("#accepted-num").html(`${acceptedApps.length}/${totalApps}`);
         thisApp.updateHTML();
         sortApps();
     })
@@ -289,18 +290,19 @@ $(document).ready(function () {
     $(document.body).on("click", "#decline", function () {
         var thisAppID = $(this).attr("data-name");
         var thisApp = eval(thisAppID);
-            thisApp.appCondition.declined = true;
-            declinedApps.push(thisApp);
-            var indexNum = applications.indexOf(thisApp);
-            if (indexNum > -1) {
-                applications.splice(indexNum, 1);
-            }
-            var decHTML = `
+        thisApp.appCondition.declined = true;
+        declinedApps.push(thisApp);
+        var indexNum = applications.indexOf(thisApp);
+        if (indexNum > -1) {
+            applications.splice(indexNum, 1);
+        }
+        var decHTML = `
             <div class="declined-thread">
             <h3>${thisApp.name}</h3>
                 <p>${thisApp.approval}% approval<p>
             </div>`
-            $(".declined-cat").append(decHTML)
+        $(".declined-cat").append(decHTML)
+        $("#declined-num").html(`${declinedApps.length}/${totalApps}`);
         thisApp.updateHTML();
         sortApps();
     })
