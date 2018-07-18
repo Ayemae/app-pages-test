@@ -124,10 +124,14 @@ height: 20px;
     position: relative;
     overflow: hidden;
     border-radius: 4px;
+    -webkit-box-shadow: 0px 1px 0px 1px rgba(50,26,117,0.4);
+    -moz-box-shadow: 0px 1px 0px 1px rgba(50,26,117,0.4);
+    box-shadow: 0px 1px 0px 1px rgba(50,26,117,0.4);
 }
 
 .quorum {
     position: absolute;
+    bottom: 2px;
     z-index: 5;
     left: 8px;
 }
@@ -159,6 +163,7 @@ height: 20px;
 .approval {
     display: inline;
     text-align: center;
+    line-height: 1.2em;
 }
 
 #tags {
