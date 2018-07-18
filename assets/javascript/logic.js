@@ -98,9 +98,9 @@ function Application(id, name) {
 </div>`;
     this.calcMeter = function () {
         if (this.appQuorum.hasMetQuorum === false) {
-            this.meter.meterSize = this.totalVotes + this.appQuorum.toHitQuorum;
+            this.meter.meterSize = (this.totalVotes + this.appQuorum.toHitQuorum) - 1;
         } else {
-            this.meter.meterSize = this.totalVotes;
+            this.meter.meterSize = this.totalVotes - 1;
         }
         var y = this.yesVotes / this.meter.meterSize;
         this.meter.yesMeterP = Math.round(y * 100);
