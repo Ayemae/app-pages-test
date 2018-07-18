@@ -184,6 +184,8 @@ function Application(id, name) {
                 $(`#${this.id}-yes`).removeClass("hide");
                 $(`#${this.id}-no`).removeClass("hide");
             }
+            $("#accepted-num").html(`${acceptedApps.length}/${totalApps}`);
+            $("#declined-num").html(`${declinedApps.length}/${totalApps}`);
         }
 }
 
@@ -282,7 +284,6 @@ $(document).ready(function () {
                 <p>${thisApp.approval}% approval<p>
             </div>`
         $(".accepted-cat").append(accHTML)
-        $("#accepted-num").html(`${acceptedApps.length}/${totalApps}`);
         thisApp.updateHTML();
         sortApps();
     })
@@ -302,7 +303,6 @@ $(document).ready(function () {
                 <p>${thisApp.approval}% approval<p>
             </div>`
         $(".declined-cat").append(decHTML)
-        $("#declined-num").html(`${declinedApps.length}/${totalApps}`);
         thisApp.updateHTML();
         sortApps();
     })
