@@ -82,14 +82,17 @@ function Application(id, name) {
             <div id="yMeter-${this.id}" class="yes-meter"></div>
             <div id="nMeter-${this.id}" class="no-meter"></div>
         </div>
-        <div class="approval">Approval:
+        <div class="approval">
             <span id="approval-${this.id}">\n${this.approval}%</span>
+            approve
         </div>
     </div>
     <div style="display: inline-block;">
             <button id="${this.id}-yes" class="yes" data-name="${this.id}">Yes</button>
             <button id="${this.id}-no" class="no" data-name="${this.id}">No</button>
             <button id="sticky" data-name="${this.id}">Sticky</button>
+            <button id="accept" data-name="${this.id}">Accept</button>
+            <button id="decline" data-name="${this.id}">Decline</button>
             <button id="triage" data-name="${this.id}">Triage</button>
         </div>
     <div id="tags">
@@ -190,15 +193,17 @@ var world_hoppers = new Application("world_hoppers", "World Hoppers");
 var martial_art_endworld = new Application("martial_art_endworld", "Martial Art Endworld");
 
 var applications = [spooky_comic, sciFi_Soap_Opera, world_hoppers, martial_art_endworld]
+var acceptedApps = [];
+var declinedApps = [];
 
-var totalApps = applications.length;
+var totalApps = applications.length + acceptedApps.length + declinedApps.length;
 
 
 $(document).ready(function () {
 
     function sortApps() {
         console.log("*******************")
-        var appClass = [".sticky-cat", ".need-votes-cat", ".met-quorum-cat", ".has-voted-cat", ".triaged-cat", ".accepted-cat", ".declined-cat"];
+        var appClass = [".sticky-cat", ".need-votes-cat", ".met-quorum-cat", ".has-voted-cat", ".triaged-cat"];
         for (var i = 0; i < appClass.length; i++) {
             $(appClass[i]).empty();
         }
@@ -212,11 +217,11 @@ $(document).ready(function () {
             // is app sticky?
             if (applications[i].appStatus === "sticky") {
                 $(".sticky-cat").append(applications[i].appHTML);
-            } // is app closed?
-            else if (applications[i].appStatus === "accepted") {
-                $(".accepted-cat").append(applications[i].appHTML);
-            } else if (applications[i].appStatus === "declined") {
-                $(".declined-cat").append(applications[i].appHTML);
+            // } // is app closed?
+            // else if (applications[i].appStatus === "accepted") {
+            //     $(".accepted-cat").append(applications[i].appHTML);
+            // } else if (applications[i].appStatus === "declined") {
+            //     $(".declined-cat").append(applications[i].appHTML);
             } else if (applications[i].appStatus === "triaged") {
                 $(".triaged-cat").append(applications[i].appHTML);
             } // has user voted?
@@ -258,6 +263,44 @@ $(document).ready(function () {
             thisApp.appCondition.isSticky = true;
         }
         else { thisApp.appCondition.isSticky = false }
+        thisApp.updateHTML();
+        sortApps();
+    })
+
+    $(document.body).on("click", "#accept", function () {
+        var thisAppID = $(this).attr("data-name");
+        var thisApp = eval(thisAppID);
+            thisApp.appCondition.accepted = true;
+            acceptedApps.push(thisApp);
+            var indexNum = applications.indexOf(thisApp);
+            if (indexNum > -1) {
+                applications.splice(indexNum, 1);
+            }
+            var accHTML = `
+            <div class="accepted-thread">
+            <h3>${thisApp.name}</h3>
+                <p>${thisApp.approval}% approval<p>
+            </div>`
+            $(".accepted-cat").append(accHTML)
+        thisApp.updateHTML();
+        sortApps();
+    })
+
+    $(document.body).on("click", "#decline", function () {
+        var thisAppID = $(this).attr("data-name");
+        var thisApp = eval(thisAppID);
+            thisApp.appCondition.declined = true;
+            declinedApps.push(thisApp);
+            var indexNum = applications.indexOf(thisApp);
+            if (indexNum > -1) {
+                applications.splice(indexNum, 1);
+            }
+            var decHTML = `
+            <div class="declined-thread">
+            <h3>${thisApp.name}</h3>
+                <p>${thisApp.approval}% approval<p>
+            </div>`
+            $(".declined-cat").append(decHTML)
         thisApp.updateHTML();
         sortApps();
     })

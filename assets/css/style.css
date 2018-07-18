@@ -3,7 +3,7 @@
 
 @font-face {
     font-family: "Hero Light";
-    src: url(../fonts/Hero-Light.otf);
+    src: url("../fonts/Hero Light.otf");
 }
 
 * {
@@ -26,6 +26,10 @@ h1 {
 
 h2 {
     font-family: "Hero Light";
+}
+
+h3 {
+    font-size: 1.4em;
 }
 
 .container {
@@ -166,6 +170,43 @@ height: 20px;
     line-height: 1.2em;
 }
 
+.closed-apps-cat {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    justify-content: center;
+}
+
+.accepted-app-space,
+.declined-app-space {
+    width: 100%;
+}
+
+.accepted-header,
+.declined-header {
+    font-family: "Yanone Kaffeesatz";
+    font-size: 30px;
+    text-align: center;
+    padding: 20px;
+    width: 100%;
+    display: inline-block;
+}
+.accepted-header {
+    color: #244d24;
+    background-color: #b6edb6;}
+.declined-header {
+    color: #4d1d1d;
+    background-color: #f2bdc7;}
+
+.accepted-thread,
+.declined-thread {
+    text-align: center;
+    padding: 15px;
+    margin: 3px 2px 0;
+    line-height: 1.4em;
+}
+.accepted-thread {background-color: #d9ebe0;}
+.declined-thread {background-color: #e8dada;}
+
 #tags {
     display: inline-block;
 }
@@ -195,7 +236,9 @@ height: 20px;
 .triaged {
     background-color: lightgrey;
 }
+.triaged * {color: rgba(0, 0, 0, 0.6);}
 
 .hide {
     display: none;
 }
+

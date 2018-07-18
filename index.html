@@ -19,14 +19,13 @@
         <div class="container">
             <img src="assets/images/SFLogo.png">
 
-            <div class="menu">Home | Comics | Stuff | Etc</div>
+            <div class="menu">Home | Comics | Hub | Etc</div>
         </div>
         <div class="user-bar">
             Settings | Notifications | Alyssa
-        <div class="user-bar-bg"></div>
-    </div>
+            <div class="user-bar-bg"></div>
+        </div>
     </header>
-    <div class="stuff"></div>
     <div class="app-page-container">
         <section class="app-index">
             <h1>App Pages Test</h1>
@@ -36,10 +35,25 @@
                 <div class="met-quorum-cat"></div>
             </div>
             <class class="has-voted-cat"></class>
+            <div class="triaged-cat"></div>
+
             <div class="closed-apps-cat">
-                <div class="triaged-cat"></div>
-                <div class="declined-cat"></div>
-                <div class="accepted-cat"></div>
+                <section class="declined-app-space">
+                    <div class="declined-header">
+                        Declined (
+                        <span id="declined-num">0/0</span>)
+                    </div>
+                    <div class="declined-cat">
+                    </div>
+                </section>
+                <section class="accepted-app-space">
+                    <div class="accepted-header">
+                        Accepted (
+                        <span id="accepted-num">0/0</span>)
+                    </div>
+                    <div class="accepted-cat">
+                    </div>
+                </section>
             </div>
 
         </section>
