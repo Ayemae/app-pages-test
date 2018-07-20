@@ -1,15 +1,15 @@
-var quorum = 30;
-
 function Application(id, name) {
     this.id = id;
     this.name = name;
     this.genres = [];
     this.format = [];
+    this.updays = [];
     this.contentWarnings = [];
     this.tags = {
         genreTags: this.genres,
         formatTags: this.format,
         contentTags: this.contentWarnings,
+        updateTags: this.updays,
         miscTags: []
     }
     this.yesVotes = 0;
@@ -38,7 +38,7 @@ function Application(id, name) {
         accepted: false,
         needsLetter: false,
     }
-    this.determineAppStatus = function () {
+    this.determineAppStatus = function() {
         if (this.appCondition.isSticky === true) {
             this.appStatus = "sticky";
         }
@@ -184,149 +184,7 @@ function Application(id, name) {
                 $(`#${this.id}-yes`).removeClass("hide");
                 $(`#${this.id}-no`).removeClass("hide");
             }
-            $("#accepted-num").html(`${acceptedApps.length}/${totalApps}`);
-            $("#declined-num").html(`${declinedApps.length}/${totalApps}`);
         }
 }
 
-var spooky_comic = new Application("spooky_comic", "Spooky Comic");
-var sciFi_Soap_Opera = new Application("sciFi_Soap_Opera", "Sci-Fi Soap Opera");
-var world_hoppers = new Application("world_hoppers", "World Hoppers");
-var martial_art_endworld = new Application("martial_art_endworld", "Martial Art Endworld");
-
-var applications = [spooky_comic, sciFi_Soap_Opera, world_hoppers, martial_art_endworld]
-var acceptedApps = [];
-var declinedApps = [];
-
-var totalApps = applications.length + acceptedApps.length + declinedApps.length;
-
-
-$(document).ready(function () {
-
-    function sortApps() {
-        console.log("*******************")
-        var appClass = [".sticky-cat", ".need-votes-cat", ".met-quorum-cat", ".has-voted-cat", ".triaged-cat"];
-        for (var i = 0; i < appClass.length; i++) {
-            $(appClass[i]).empty();
-        }
-
-        function compare(a, b) {
-            return a.priorityRating - b.priorityRating
-        }
-        applications = applications.sort(compare);
-
-        for (var i = 0; i < applications.length; i++) {
-            // is app sticky?
-            if (applications[i].appStatus === "sticky") {
-                $(".sticky-cat").append(applications[i].appHTML);
-                // } // is app closed?
-                // else if (applications[i].appStatus === "accepted") {
-                //     $(".accepted-cat").append(applications[i].appHTML);
-                // } else if (applications[i].appStatus === "declined") {
-                //     $(".declined-cat").append(applications[i].appHTML);
-            } else if (applications[i].appStatus === "triaged") {
-                $(".triaged-cat").append(applications[i].appHTML);
-            } // has user voted?
-            else if (applications[i].userVoted === true) {
-                $(".has-voted-cat").append(applications[i].appHTML);
-            } // else
-            else if (applications[i].appQuorum.hasMetQuorum === true) {
-                $(".met-quorum-cat").append(applications[i].appHTML)
-            } else {
-                $(".need-votes-cat").append(applications[i].appHTML)
-            }
-            applications[i].updateHTML();
-        }
-    }
-
-    sortApps();
-
-
-    $(document.body).on("click", ".yes", function () {
-        var thisAppID = $(this).attr("data-name");
-        var thisApp = eval(thisAppID);
-        thisApp.yesVotes++;
-        thisApp.updateHTML();
-        sortApps();
-    })
-
-    $(document.body).on("click", ".no", function () {
-        var thisAppID = $(this).attr("data-name");
-        var thisApp = eval(thisAppID);
-        thisApp.noVotes++;
-        thisApp.updateHTML();
-        sortApps();
-    })
-
-    $(document.body).on("click", "#sticky", function () {
-        var thisAppID = $(this).attr("data-name");
-        var thisApp = eval(thisAppID);
-        if (thisApp.appCondition.isSticky === false) {
-            thisApp.appCondition.isSticky = true;
-        }
-        else { thisApp.appCondition.isSticky = false }
-        thisApp.updateHTML();
-        sortApps();
-    })
-
-    $(document.body).on("click", "#accept", function () {
-        var thisAppID = $(this).attr("data-name");
-        var thisApp = eval(thisAppID);
-        thisApp.appCondition.accepted = true;
-        acceptedApps.push(thisApp);
-        var indexNum = applications.indexOf(thisApp);
-        if (indexNum > -1) {
-            applications.splice(indexNum, 1);
-        }
-        var accHTML = `
-        <div id=${thisApp.id} class="accepted-thread" data-name=${thisApp.id}>
-            <h3>${thisApp.name}</h3>
-                <p>${thisApp.approval}% approval<p>
-            </div>`
-        $(".accepted-cat").append(accHTML)
-        thisApp.updateHTML();
-        sortApps();
-    })
-
-    $(document.body).on("click", "#decline", function () {
-        var thisAppID = $(this).attr("data-name");
-        var thisApp = eval(thisAppID);
-        thisApp.appCondition.declined = true;
-        declinedApps.push(thisApp);
-        var indexNum = applications.indexOf(thisApp);
-        if (indexNum > -1) {
-            applications.splice(indexNum, 1);
-        }
-        var decHTML = `
-        <div id=${thisApp.id} class="declined-thread" data-name=${thisApp.id}>
-            <h3>${thisApp.name}</h3>
-                <p>${thisApp.approval}% approval<p>
-            </div>`
-        $(".declined-cat").append(decHTML)
-        thisApp.updateHTML();
-        sortApps();
-    })
-
-    $(document.body).on("click", "#triage", function () {
-        var thisAppID = $(this).attr("data-name");
-        var thisApp = eval(thisAppID);
-        if (thisApp.appCondition.isTriaged === false) {
-            if (!thisApp.yesVotes) {
-                thisApp.appCondition.isTriaged = true;
-            } else {
-                var conf = confirm("This application has at least one vote in favor. Are you sure you want to triage?");
-                if (conf === true) { thisApp.appCondition.triageMotion = true; }
-            }
-        }
-        else {
-            thisApp.appCondition.triageMotion = false;
-            alert("The triage has been overturned.")
-            thisApp.appCondition.triageApprove = 2;
-        }
-        thisApp.updateHTML();
-        sortApps();
-    })
-
-
-
-}); //end doc ready
+module.exports = Application;
